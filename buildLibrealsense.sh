@@ -3,7 +3,8 @@
 # Copyright (c) 2016-21 Jetsonhacks 
 # MIT License
 
-LIBREALSENSE_DIRECTORY=${HOME}/librealsense
+# LIBREALSENSE_DIRECTORY=${HOME}/librealsense
+LIBREALSENSE_DIRECTORY=${HOME}/Apsoft/realsense
 INSTALL_DIR=$PWD
 NVCC_PATH=/usr/local/cuda/bin/nvcc
 
@@ -89,15 +90,16 @@ echo ""
 read -n 1 -s -r -p "Press any key to continue"
 echo ""
 
-if [ ! -d "$LIBREALSENSE_DIRECTORY" ] ; then
-  # clone librealsense
-  cd ${HOME}
+if [ ! -d "$LIBREALSENSE_DIRECTORY/librealsense" ] ; then
+  mkdir -p -- "$LIBREALSENSE_DIRECTORY"
+  cd ${LIBREALSENSE_DIRECTORY}
+  
   echo "${green}Cloning librealsense${reset}"
   git clone https://github.com/IntelRealSense/librealsense.git
 fi
 
 # Is the version of librealsense current enough?
-cd $LIBREALSENSE_DIRECTORY
+cd "$LIBREALSENSE_DIRECTORY/librealsense"
 VERSION_TAG=$(git tag -l $LIBREALSENSE_VERSION)
 if [ ! $VERSION_TAG  ] ; then
    echo ""
@@ -119,7 +121,7 @@ git checkout $LIBREALSENSE_VERSION
 cd $INSTALL_DIR
 sudo ./scripts/installDependencies.sh
 
-cd $LIBREALSENSE_DIRECTORY
+cd "$LIBREALSENSE_DIRECTORY/librealsense"
 git checkout $LIBREALSENSE_VERSION
 
 # Now compile librealsense and install
@@ -132,6 +134,7 @@ export CUDACXX=$NVCC_PATH
 export PATH=${PATH}:/usr/local/cuda/bin
 export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:/usr/local/cuda/lib64
 
+# /usr/bin/cmake ../ -DBUILD_EXAMPLES=true -DFORCE_LIBUVC=ON -DBUILD_WITH_CUDA="$USE_CUDA" -DCMAKE_BUILD_TYPE=release -DBUILD_PYTHON_BINDINGS=bool:true
 /usr/bin/cmake ../ -DBUILD_EXAMPLES=true -DFORCE_LIBUVC=ON -DBUILD_WITH_CUDA="$USE_CUDA" -DCMAKE_BUILD_TYPE=release -DBUILD_PYTHON_BINDINGS=bool:true
 
 # The library will be installed in /usr/local/lib, header files in /usr/local/include
@@ -179,7 +182,7 @@ else
    echo "PYTHONPATH added to ~/.bashrc. Pyhon wrapper is now available for importing pyrealsense2"
 fi
 
-cd $LIBREALSENSE_DIRECTORY
+cd "$LIBREALSENSE_DIRECTORY/librealsense"
 echo "${green}Applying udev rules${reset}"
 # Copy over the udev rules so that camera can be run from user space
 sudo cp config/99-realsense-libusb.rules /etc/udev/rules.d/
